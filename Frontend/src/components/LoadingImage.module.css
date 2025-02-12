@@ -1,0 +1,8 @@
+.line{
+animation: movingLine 4000ms ease-in-out 100ms  infinite ;
+}
+@keyframes movingLine {
+    from{left: 1%}
+    to{left: 99%;}
+    
+}
