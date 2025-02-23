@@ -1,38 +1,23 @@
 import { ClarifaiStub, grpc } from "clarifai-nodejs-grpc";
-
+import { smartBrainModel } from "../config/Clarifai.js";
 const detectFace = async (req, res) => {
   let faceDetects = [];
   const { imgUrl } = req.body;
-  //index.js file
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  // In this section, we set the user authentication, user and app ID, model details, and the URL
-  // of the image we want as an input. Change these strings to run your own example.
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  const PAT = smartBrainModel.authConfig.pat;
+  const USER_ID = smartBrainModel.authConfig.userId;
+  const APP_ID = smartBrainModel.authConfig.appId;
 
-  // Your PAT (Personal Access Token) can be found in the Account's Security section
-  const PAT = "08cd70dd90d24da0900e62eff2ced438";
-  // Specify the correct user_id/app_id pairings
-  // Since you're making inferences outside your app's scope
-  const USER_ID = "clarifai";
-  const APP_ID = "main";
-  // Change these to whatever model and image URL you want to use
-  const MODEL_ID = "face-detection";
-  const MODEL_VERSION_ID = "6dc7e46bc9124c5c8824be4822abe105";
+  const MODEL_ID = smartBrainModel.modelId;
+  const MODEL_VERSION_ID = smartBrainModel.modelVersionId;
   const IMAGE_URL = imgUrl;
-  // To use a local file, assign the location variable
-  // const IMAGE_FILE_LOCATION = 'YOUR_IMAGE_FILE_LOCATION_HERE'
-
   ///////////////////////////////////////////////////////////////////////////////////
   // YOU DO NOT NEED TO CHANGE ANYTHING BELOW THIS LINE TO RUN THIS EXAMPLE
   ///////////////////////////////////////////////////////////////////////////////////
-
   const stub = ClarifaiStub.grpc();
-
   // This will be used by every Clarifai endpoint call
   const metadata = new grpc.Metadata();
   metadata.set("authorization", "Key " + PAT);
-
   // To use a local text file, uncomment the following lines
   // const fs = require("fs");
   // const imageBytes = fs.readFileSync(IMAGE_FILE_LOCATION);
@@ -89,9 +74,6 @@ const detectFace = async (req, res) => {
             bottomRow,
             rightCol,
           });
-          // console.log(
-          //   `${name}: ${value} BBox: ${topRow}, ${leftCol}, ${bottomRow}, ${rightCol}`
-          // );
         });
       });
       res.json({ success: true, faceDetects });

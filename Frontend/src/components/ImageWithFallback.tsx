@@ -76,7 +76,7 @@ export default function ImageWithFallback({
   return (
     <div style={{ position: "relative" }}>
       <img
-        className="rounded-md"
+        className="rounded-md w-96"
         id="inputImg"
         src={imgSrc ? imgSrc : fallback}
         onError={onError}

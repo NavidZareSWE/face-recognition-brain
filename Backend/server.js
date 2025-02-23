@@ -4,7 +4,6 @@ import bodyParser from "body-parser";
 import bcrypt from "bcrypt";
 import cors from "cors";
 import AIRouter from "./routes/AIRoute.js";
-import connectClarifai from "./config/Clarifai.js";
 
 const saltRounds = 10;
 /**********************************
@@ -17,16 +16,6 @@ var corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
-let detectorModel;
-
-connectClarifai()
-  .then((model) => {
-    detectorModel = model;
-    console.log("Clarifai connected successfully.");
-  })
-  .catch((error) => {
-    console.error("Error connecting to Clarifai:", error);
-  });
 
 /**********************************
  **********************************
