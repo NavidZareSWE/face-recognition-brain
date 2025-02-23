@@ -8,7 +8,6 @@ import SignIn from "./components/SignIn";
 import Register from "./components/Register";
 import { AppContext } from "../context/Appcontext";
 
-// const clarifai_API_KEY = import.meta.env.VITE_CLARIFAI_API_KEY;
 
 const App = () => {
   const { token, setToken, navigate } = useContext(AppContext);

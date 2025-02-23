@@ -1,14 +1,14 @@
-import { Model } from "clarifai-nodejs";
-
-const Clarifai = async () => {
-  new Model({
+import pkg from "clarifai-nodejs";
+const { Model: clarifai } = pkg;
+const connectClarifai = async () => {
+  new clarifai({
     authConfig: {
-      USER_ID: process.env.CLARIFAI_USER_ID,
-      APP_ID: process.env.CLARIFAI_APP_ID,
-      PAT: process.env.CLARIFAI_API_KEY,
+      userId: process.env.CLARIFAI_USER_ID,
+      appId: process.env.CLARIFAI_APP_ID,
+      pat: process.env.CLARIFAI_API_KEY,
     },
-    MODEL_ID: process.env.CLARIFAI_MODEL_ID,
+    modelId: process.env.CLARIFAI_MODEL_ID,
   });
 };
 
-export default Clarifai;
+export default connectClarifai;

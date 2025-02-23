@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import style from "./ImageLinkForm.module.css";
 import { toast } from "react-toastify";
+import { AppContext } from "../../context/Appcontext";
 
 const toastOptions = {
   error: {
@@ -17,27 +18,58 @@ const toastOptions = {
 };
 const isWhitespaceString = (str) => !str.replace(/\s/g, "").length;
 
-const ImageLinkForm = ({ setImageURL }) => {
+const ImageLinkForm = ({ setImageURL, setFaces }) => {
   const [inputValue, setInputValue] = useState("");
-
-  const onPictureSubmit = (input) => {
-    if (input.length === 0)
+  const { BACKEND_URL } = useContext(AppContext);
+  const isValidURL = (input) => {
+    if (input.length === 0) {
       toast.error("You Haven't Entered Anything!", toastOptions.error);
-    else if (isWhitespaceString(input))
+      return false;
+    } else if (isWhitespaceString(input)) {
       toast.error("Space Only URL's don't exist!", toastOptions.error);
-    else {
+      return false;
+    } else {
       try {
         const pattern =
           /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
         const isValid = pattern.test(input);
-        if (isValid) setImageURL(input);
-        else toast.error("Invalid URL!", toastOptions.error);
+        if (isValid) {
+          setImageURL(input);
+          return true;
+        } else {
+          toast.error("Invalid URL!", toastOptions.error);
+          return false;
+        }
       } catch (error) {
         console.error(error);
       }
     }
+    return false;
   };
-  useEffect(()=> {setInputValue(inputValue)},[inputValue])
+  useEffect(() => {
+    setInputValue(inputValue);
+  }, [inputValue]);
+  const onPictureSubmit = async (input) => {
+    if (isValidURL(input)) {
+      const response = fetch(BACKEND_URL + "/api/ai/facedetect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imgUrl: inputValue,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if(data.success){
+            setFaces(data.faceDetects)
+          }else{
+            toast.error(data.message)
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+
+  };
 
   return (
     <div>
@@ -49,7 +81,7 @@ const ImageLinkForm = ({ setImageURL }) => {
           className={`${style.form} flex w-[700px] text-center p-8 rounded-md shadow-lg`}
         >
           <input
-          placeholder="Enter A Valid URL"
+            placeholder="Enter A Valid URL"
             className="text-lg p-2 w-2/3 pl-4 rounded-lg rounded-r-none"
             type="text"
             onChange={(e) => setInputValue(e.target.value)}

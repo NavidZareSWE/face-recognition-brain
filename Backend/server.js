@@ -1,17 +1,36 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
-var cors = require("cors");
+import express from "express";
+import "dotenv/config";
+import bodyParser from "body-parser";
+import bcrypt from "bcrypt";
+import cors from "cors";
+import AIRouter from "./routes/AIRoute.js";
+import connectClarifai from "./config/Clarifai.js";
 
 const saltRounds = 10;
-
+/**********************************
+ ********** App Config ************
+ ********************************** */
 const app = express();
 const port = 3_000;
 var corsOptions = {
-  origin: "http://http://localhost:3000",
+  origin: "*",
 };
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+let detectorModel;
+
+connectClarifai()
+  .then((model) => {
+    detectorModel = model;
+    console.log("Clarifai connected successfully.");
+  })
+  .catch((error) => {
+    console.error("Error connecting to Clarifai:", error);
+  });
+
+/**********************************
+ **********************************
+ ********************************** */
 const database = {
   users: [
     {
@@ -84,9 +103,6 @@ const isValidPassword = async (password, hash) => {
   return result;
 };
 
-app.listen(port, () => {
-  console.log(`App is running on port: ${port}`);
-});
 /*
 / ---> res = API is working
 /signin ---> POST = success/fail
@@ -94,3 +110,11 @@ app.listen(port, () => {
 /profile/:userid ---> GET = user
 /image ---> PUT/POST ---> user
 */
+/**********************************
+ ********* API Endpoints **********
+ ********************************** */
+app.use("/api/ai", AIRouter);
+
+app.listen(port, () => {
+  console.log(`App is running on port: ${port}`);
+});

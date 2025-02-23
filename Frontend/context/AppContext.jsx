@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
-  // const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [token, setToken] = useState(
     "$2b$10$aWfqsPsTDtK5bAn1f4Z/OON.dop2fMVzCj9XwlrnV3zlpKxEWggiO"
   );
@@ -22,6 +22,7 @@ const AppContextProvider = (props) => {
     navigate,
     token,
     setToken,
+    BACKEND_URL
   };
   return (
     //Wrapping: {props.children}
