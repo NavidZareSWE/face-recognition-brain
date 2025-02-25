@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import style from "./ImageLinkForm.module.css";
 import { toast } from "react-toastify";
-import { AppContext } from "../../context/Appcontext";
+import { AppContext } from "../../context/AppContext";
 
 const toastOptions = {
   error: {
@@ -20,7 +20,7 @@ const isWhitespaceString = (str) => !str.replace(/\s/g, "").length;
 
 const ImageLinkForm = ({ setImageURL, setFaces }) => {
   const [inputValue, setInputValue] = useState("");
-  const { BACKEND_URL } = useContext(AppContext);
+  const { BACKEND_URL, user } = useContext(AppContext);
   const isValidURL = (input) => {
     if (input.length === 0) {
       toast.error("You Haven't Entered Anything!", toastOptions.error);
@@ -51,7 +51,7 @@ const ImageLinkForm = ({ setImageURL, setFaces }) => {
   }, [inputValue]);
   const onPictureSubmit = async (input) => {
     if (isValidURL(input)) {
-      const response = fetch(BACKEND_URL + "/api/ai/facedetect", {
+      fetch(BACKEND_URL + "/api/ai/facedetect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -60,15 +60,31 @@ const ImageLinkForm = ({ setImageURL, setFaces }) => {
       })
         .then((response) => response.json())
         .then((data) => {
-          if(data.success){
-            setFaces(data.faceDetects)
-          }else{
-            toast.error(data.message)
+          if (data.success) {
+            setFaces(data.faceDetects);
+            fetch(BACKEND_URL + "/image",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: user.id,
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    console.log("Number to Update to: ",data.entries.entries)
+                    user.entries = data.entries.entries;
+                    console.log("After Update: ",user.entries)
+                    console.log("User: ", user)
+                  }
+                });
+          } else {
+            toast.error(data.message);
           }
         })
         .catch((err) => console.error(err));
     }
-
   };
 
   return (

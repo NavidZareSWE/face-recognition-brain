@@ -14,7 +14,6 @@ html {
   font-style: normal;
 }
 body {
-  font-family: "Courier New", Courier, monospace;
   margin: 0;
   padding: 0;
   background: linear-gradient(89deg, #FF5EDF 0%, #04C8DE 100%); /* w3c */

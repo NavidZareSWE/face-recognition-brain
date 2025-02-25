@@ -1,7 +1,44 @@
-import { useContext } from "react";
-import { AppContext } from "../../context/Appcontext";
-const SignIn = () => {
-  const {navigate} = useContext(AppContext);
+import { useContext, useState } from "react";
+import { AppContext } from "../../context/AppContext";
+const Register = () => {
+  const { navigate, BACKEND_URL, loadUser } = useContext(AppContext);
+  const [registerEmail, setEmail] = useState("");
+  const [registerPassword, setPassword] = useState("");
+  const [registerName, setName] = useState("");
+
+  const onEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+  const onPasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
+  const onNameChange = (e) => {
+    setName(e.target.value);
+  };
+
+
+
+
+  const onRegister = async (e) => {
+    e.preventDefault();
+    fetch(BACKEND_URL + "/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: registerEmail,
+        password: registerPassword,
+        name: registerName
+      }),
+    })
+    .then((response) => response.json())
+    .then((user) => {
+      if (user.id){
+      loadUser(user)
+        navigate("/home");
+      }
+      else console.log(user);
+    });
+  };
   return (
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center items-center py-3 lg:px-8">
@@ -9,8 +46,7 @@ const SignIn = () => {
           <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <img
               style={{
-                filter:
-                  "brightness(0) saturate(100%)",
+                filter: "brightness(0) saturate(100%)",
               }}
               alt="Your Company"
               src="brain.svg"
@@ -23,7 +59,7 @@ const SignIn = () => {
 
           <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
             <form action="#" method="POST" className="space-y-6">
-            <div>
+              <div>
                 <label
                   htmlFor="name"
                   className="block text-sm/6 font-medium text-gray-900"
@@ -32,6 +68,8 @@ const SignIn = () => {
                 </label>
                 <div className="mt-2">
                   <input
+                    value={registerName}
+                    onChange={onNameChange}
                     id="name"
                     name="name"
                     type="text"
@@ -49,6 +87,8 @@ const SignIn = () => {
                 </label>
                 <div className="mt-2">
                   <input
+                    value={registerEmail}
+                    onChange={onEmailChange}
                     id="email"
                     name="email"
                     type="email"
@@ -67,10 +107,11 @@ const SignIn = () => {
                   >
                     Password
                   </label>
-
                 </div>
                 <div className="mt-2">
                   <input
+                    onChange={onPasswordChange}
+                    value={registerPassword}
                     id="password"
                     name="password"
                     type="password"
@@ -83,7 +124,7 @@ const SignIn = () => {
 
               <div>
                 <button
-                  type="submit"
+                  onClick={(e) => onRegister(e)}
                   className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Register
@@ -97,4 +138,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default Register;

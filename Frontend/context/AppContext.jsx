@@ -1,28 +1,49 @@
 /* eslint-disable react/prop-types */
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const [token, setToken] = useState(
-    "$2b$10$aWfqsPsTDtK5bAn1f4Z/OON.dop2fMVzCj9XwlrnV3zlpKxEWggiO"
-  );
+  const [user, setUser] = useState({
+    id: '',
+    name: '',
+    password: '',
+    email: '',
+    entries: 0,
+    joined: ''
+  })
+  // const [token, setToken] = useState(
+  //   "$2b$10$aWfqsPsTDtK5bAn1f4Z/OON.dop2fMVzCj9XwlrnV3zlpKxEWggiO"
+  // );
   //Programmatic Redirection: Navigate to different routes based on application state or conditions.
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!token && localStorage.getItem("token")) {
-      setToken(localStorage.getItem("token"));
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!token && localStorage.getItem("token")) {
+  //     setToken(localStorage.getItem("token"));
+  //   }
+  // }, []);
+
+  const loadUser = (data) => {
+    setUser({
+      id: data.id,
+      name:  data.name,
+      email:  data.email,
+      entries:  data.entries,
+      joined:  data.joined
+    })
+  }
 
   const value = {
+    // token,
+    // setToken,
     navigate,
-    token,
-    setToken,
-    BACKEND_URL
+    BACKEND_URL,
+    user,
+    setUser,
+    loadUser
   };
   return (
     //Wrapping: {props.children}

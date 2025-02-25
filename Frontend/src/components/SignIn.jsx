@@ -1,7 +1,34 @@
-import { useContext } from "react";
-import { AppContext } from "../../context/Appcontext";
+import { useContext, useState } from "react";
+import { AppContext } from "../../context/AppContext";
 const SignIn = () => {
-  const { navigate } = useContext(AppContext);
+  const { navigate, BACKEND_URL, loadUser } = useContext(AppContext);
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const onEmailChange = (e) => {
+    setSignInEmail(e.target.value);
+  };
+  const onPasswordChange = (e) => {
+    setSignInPassword(e.target.value);
+  };
+
+  const onSubmitSignIn = async (e) => {
+    e.preventDefault();
+    fetch(BACKEND_URL + "/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: signInEmail,
+        password: signInPassword,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          loadUser(data.user);
+          navigate("/home");
+        } else console.log(data);
+      });
+  };
   return (
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center items-center py-3 lg:px-8">
@@ -31,6 +58,8 @@ const SignIn = () => {
                 </label>
                 <div className="mt-2">
                   <input
+                    value={signInEmail}
+                    onChange={onEmailChange}
                     id="email"
                     name="email"
                     type="email"
@@ -52,6 +81,8 @@ const SignIn = () => {
                 </div>
                 <div className="mt-2">
                   <input
+                    value={signInPassword}
+                    onChange={onPasswordChange}
                     id="password"
                     name="password"
                     type="password"
@@ -64,7 +95,7 @@ const SignIn = () => {
 
               <div>
                 <button
-                  type="submit"
+                  onClick={(e) => onSubmitSignIn(e)}
                   className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Sign in

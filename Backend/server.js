@@ -4,8 +4,19 @@ import bodyParser from "body-parser";
 import bcrypt from "bcrypt";
 import cors from "cors";
 import AIRouter from "./routes/AIRoute.js";
+import knex from "knex";
 
-const saltRounds = 10;
+const hashPassword = async (password) => {
+  const saltRounds = 10;
+  const hashedPass = await bcrypt.hash(password, saltRounds);
+  return hashedPass;
+};
+
+const isValidPassword = async (password, hash) => {
+  const result = await bcrypt.compare(password, hash);
+  return result;
+};
+
 /**********************************
  ********** App Config ************
  ********************************** */
@@ -14,83 +25,105 @@ const port = 3_000;
 var corsOptions = {
   origin: "*",
 };
-app.use(cors(corsOptions));
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    port: 5432,
+    user: "postgres",
+    password: "test",
+    database: "smart-brain",
+  },
+});
+
+app.use(cors());
 app.use(bodyParser.json());
 
 /**********************************
  **********************************
  ********************************** */
-const database = {
-  users: [
-    {
-      id: "123",
-      name: "John",
-      email: "John@gmail.com",
-      password: "cookies",
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: "124",
-      name: "Sally",
-      email: "sally@gmail.com",
-      password: "bananas",
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-};
-
 app.get("/", (req, res) => {
-  res.send(database);
+  res.send("API is Working");
 });
+
 app.post("/signin", (req, res) => {
-  if (
-    req.body.email === database.users[0].email &&
-    req.body.password === database.users[0].password
-  )
-    res.json("success");
-  else res.status(400).json("error logging in");
+  const { email, password } = req.body;
+  db.transaction(async (trx) => {
+    try {
+      const data = await trx
+        .select("email", "hash")
+        .from("login")
+        .where({ email });
+      if (data.length !== 0) {
+        const isValid = await isValidPassword(password, data[0].hash);
+        if (isValid) {
+          const user = await trx("users").select("*").where({ email });
+          res.json({ success: true, message: "Success", user: user[0] });
+        } else {
+          res.status(400).json("Wrong Credentials");
+        }
+      } else {
+        res.status(400).json("Wrong Credentials");
+      }
+    } catch (err) {
+      res.status(400).json("Failed to SignIn, Try Again Later!");
+    }
+  });
 });
-app.post("/register", (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    database.users.push({
-      id: "125",
-      name,
-      email,
-      password,
-      entries: 0,
-      joined: new Date(),
-    });
-    res.json(database.users.at(-1));
-  } catch (error) {
-    console.error(error);
-  }
+
+app.post("/register", async (req, res) => {
+  const { name, email, password } = req.body;
+  const hash = await hashPassword(password);
+  db.transaction((trx) => {
+    trx
+      .insert({ hash, email })
+      .into("login")
+      .returning("email")
+      .then((loginEmail) =>
+        trx("users")
+          .returning("*")
+          .insert({
+            name: name,
+            email: loginEmail[0].email,
+            joined: new Date(),
+          })
+          .then((user) => res.json(user[0]))
+          .catch((err) => res.status(400).json("Unable to Register"))
+      )
+      .then(trx.commit)
+      .catch(trx.rollback);
+  });
 });
 app.get("/profile/:id", (req, res) => {
   const { id } = req.params;
-  database.users.forEach((user) => {
-    if (user.id === id) {
-      return res.json(user);
-    }
-  });
-  res.status(404).json("no such user");
+
+  db.select("*")
+    .from("users")
+    .where({ id })
+    .then((user) => {
+      if (user.length) res.json(user[0]);
+      else res.status(400).json("No such user");
+    })
+    .catch((err) => res.status(400).json("Error getting user"));
 });
 app.post("/image", (req, res) => {
   const { id } = req.body;
-  database.users.forEach((user) => {
-    if (user.id === id) {
-      ++user.entries;
-      return res.json(user.entries);
-    }
-  });
+  let prevEntries = -1;
+  db.select("entries")
+    .from("users")
+    .where("id", "=", id)
+    .then((arr) => (prevEntries = arr[0].entries));
+  db("users")
+    .where("id", "=", id)
+    .increment("entries", 1)
+    .returning("entries")
+    .then((entries) => {
+      if (entries !== prevEntries)
+        res.json({ success: true, entries: entries[0] });
+      else res.status(400).json("Error Incriminating Entries");
+    })
+    .catch((err) => res.status(400).json("Error"));
 });
-
-const isValidPassword = async (password, hash) => {
-  const result = await bcrypt.compare(password, hash);
-  return result;
-};
 
 /*
 / ---> res = API is working
