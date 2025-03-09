@@ -17,8 +17,8 @@ const app = express();
 const port = process.env.PORT || 3_000;
 const db = knexConfig;
 
-app.use(cors());
 app.use(bodyParser.json());
+app.use(cors());
 /**********************************
  ********* API Endpoints **********
  ********************************** */
