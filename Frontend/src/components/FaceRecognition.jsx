@@ -1,17 +1,9 @@
 // import ImageWithFallback from "./ImageWithFallback";
 import LoadingImage from "./LoadingImage";
 import { Suspense } from "react";
-import { lazyLoad } from "../utils/lazyLoad";
+import { lazy } from "react";
 
-// Assuming you are using a bundler like Webpack, Vite, etc.
-const url = (() => {
-  let NEW_URL = new URL(".", import.meta.url).pathname;
-  while (NEW_URL.charAt(NEW_URL.length - 1) === "/")
-    NEW_URL = NEW_URL.substring(0, NEW_URL.length - 1);
-  return NEW_URL;
-})();
-
-const ImageWithFallback = lazyLoad(url + "/ImageWithFallback.tsx");
+const ImageWithFallback = lazy(() => import('./ImageWithFallback'));
 
 const FaceRecognition = ({ imageURL, faces }) => {
   return imageURL === "" ? (
