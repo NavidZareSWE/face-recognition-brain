@@ -11,7 +11,7 @@ const url = (() => {
   return NEW_URL;
 })();
 
-const ImageWithFallback = lazyLoad(url + "/ImageWithFallback");
+const ImageWithFallback = lazyLoad(url + "/ImageWithFallback.tsx");
 
 const FaceRecognition = ({ imageURL, faces }) => {
   return imageURL === "" ? (
