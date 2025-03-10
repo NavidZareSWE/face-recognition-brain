@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import { lazyLoad } from "../utils/lazyLoad";
 
 // Assuming you are using a bundler like Webpack, Vite, etc.
-const url = new URL(".", import.meta.url).pathname;
+let url = new URL(".", import.meta.url).pathname;
+while(url.charAt(url.length -1) === '/') url = url.substring(0, url.length-1)
 const ImageWithFallback = lazyLoad(url + "/ImageWithFallback");
 
 const FaceRecognition = ({ imageURL, faces }) => {
